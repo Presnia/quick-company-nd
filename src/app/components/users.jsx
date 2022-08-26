@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import api from '../api';
+import Pagination from "./Pagination";
+import { paginate } from "../utils/paginate";
 
 const Users = () => {
     const [users, setUsers] = useState(api.users.fetchAll());
@@ -14,16 +16,25 @@ const Users = () => {
         return 'человек тусанёт'
     };
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const count = users.length;
+    const pageSize = 4;
+    const handlePageChange = (pageIndex) => {
+        setCurrentPage(pageIndex);
+    }
+
+    const userCrop = paginate(users, currentPage, pageSize);
+
     return (
         <div className='container w-75 mt-3' style={{outline: 'none'}}>
             <div className='d-flex justify-content-center'>
                 <span
                     className={`badge 
-                bg-${users.length > 0 ? 'primary' : 'danger'} 
+                bg-${count > 0 ? 'primary' : 'danger'} 
                 rounded text-white p-2 w-50 fs-4 fw-normal text-center`}
                 >
-                {users.length > 0
-                    ? `${users.length} ${renderPhrase(users.length)} с тобой сегодня`
+                {count > 0
+                    ? `${count} ${renderPhrase(count)} с тобой сегодня`
                     : 'Никто с тобой сегодня не тусанёт :('}
             </span>
             </div>
@@ -31,8 +42,8 @@ const Users = () => {
             <table className="table">
                 <thead>
                     <tr>
-                        <th scope="col">Имя</th>
-                        <th scope="col">Качества</th>
+                        <th scope="col" className='col-3'>Имя</th>
+                        <th scope="col" className='col-3'>Качества</th>
                         <th scope="col">Профессия</th>
                         <th scope="col">Встретился (раз)</th>
                         <th scope="col">Оценка</th>
@@ -41,7 +52,7 @@ const Users = () => {
                 </thead>
                 <tbody>
                     {
-                        users.map(user =>
+                        userCrop.map(user =>
                             <tr key={user._id} className='align-middle'>
                                 <td>{user.name}</td>
                                 <td>{user.qualities.map(q =>
@@ -64,11 +75,16 @@ const Users = () => {
                                     </button>
                                 </td>
                             </tr>
-                        )
-                    }
+                        )}
                 </tbody>
             </table>
             }
+            <Pagination
+                itemsCount={count}
+                pageSize={pageSize}
+                currentPage={currentPage}
+                onPageChange={handlePageChange}
+            />
         </div>
     );
 };
